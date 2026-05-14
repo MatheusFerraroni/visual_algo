@@ -1,0 +1,36 @@
+export const CLUSTER_COLORS = [
+  "#d1495b",
+  "#2e86ab",
+  "#3f8f5f",
+  "#8c5e34",
+  "#7b5ea7",
+  "#f18f01",
+  "#008585",
+  "#c04abc",
+  "#4f6d7a",
+  "#d97706",
+  "#1982c4",
+  "#6a994e",
+  "#ef476f",
+  "#118ab2",
+  "#ff9f1c",
+  "#8338ec",
+  "#3a86ff",
+  "#e76f51",
+  "#2a9d8f",
+  "#b56576",
+  "#ff595e",
+  "#198754",
+  "#4361ee",
+  "#f72585",
+  "#8ac926",
+  "#ffca3a",
+  "#577590",
+  "#06d6a0",
+  "#c1121f",
+  "#5f0f40",
+];
+
+export function getClusterColor(clusterIndex) {
+  return CLUSTER_COLORS[clusterIndex % CLUSTER_COLORS.length];
+}

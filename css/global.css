@@ -1,0 +1,46 @@
+:root {
+  --page-bg: #f5f1e8;
+  --surface: #fffdf8;
+  --border: #d8cfbf;
+  --text-main: #1f1a14;
+  --text-soft: #5f564b;
+  --accent: #c4632f;
+  --shadow-soft: 0 18px 40px rgba(31, 26, 20, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(196, 99, 47, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8f4ec 0%, var(--page-bg) 100%);
+  color: var(--text-main);
+}
+
+.page-header,
+.list-group {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.page-header {
+  padding: 2rem;
+}
+
+.list-group-item {
+  background-color: transparent;
+}
+
+.list-group-item:hover {
+  background-color: rgba(196, 99, 47, 0.06);
+}
+
+.btn-outline-dark {
+  border-width: 1px;
+}

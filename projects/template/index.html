@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Template | Visual Algo</title>
+    <link rel="stylesheet" href="../../shared/libs/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <main class="template-page container-fluid py-3 py-lg-4">
+      <header class="template-header mb-3">
+        <h1 class="h3 mb-0">Template</h1>
+        <a class="btn btn-outline-dark btn-sm" href="../../index.html">
+          Voltar para a home
+        </a>
+      </header>
+
+      <section class="workspace-layout">
+        <aside class="control-panel">
+          <div class="control-panel__section">
+            <h2 class="h6 mb-3">Configuracoes</h2>
+            <div class="d-grid">
+              <button id="reset-button" class="btn btn-dark" type="button">
+                Reset
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <div class="canvas-panel">
+          <div id="canvas-root" class="canvas-panel__body"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../shared/libs/p5.min.js"></script>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

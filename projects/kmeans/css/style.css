@@ -1,0 +1,336 @@
+.template-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.template-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.workspace-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  align-items: start;
+}
+
+.control-panel {
+  padding: 1rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.control-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-panel__group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.control-value {
+  min-width: 3.5rem;
+  padding: 0.15rem 0.5rem;
+  text-align: center;
+  color: var(--text-main);
+  background-color: rgba(31, 26, 20, 0.08);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.form-range {
+  cursor: pointer;
+}
+
+.canvas-panel {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  background: linear-gradient(180deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.01));
+  border: 1px solid rgba(31, 26, 20, 0.12);
+  overflow: hidden;
+  align-self: start;
+}
+
+.canvas-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.canvas-panel__body {
+  display: block;
+  width: 100%;
+  height: clamp(540px, 68vh, 820px);
+  min-height: 540px;
+  max-height: 74vh;
+  padding: 0;
+}
+
+.canvas-panel__body canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.run-progress {
+  padding: 0.9rem 1rem 1rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.run-progress__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.run-progress__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.run-progress__value {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.run-progress .progress {
+  height: 0.8rem;
+  background-color: rgba(31, 26, 20, 0.08);
+}
+
+.run-progress .progress-bar {
+  background-color: #c4632f;
+}
+
+.canvas-actions-panel {
+  padding: 1rem 1.25rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.canvas-actions-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 2fr);
+  gap: 1rem;
+}
+
+.marking-panel {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.marking-panel__header {
+  margin-bottom: 1rem;
+}
+
+.marking-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.preset-panel {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.preset-panel__header {
+  margin-bottom: 1rem;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.insights-panel {
+  padding: 1rem 1.25rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.insights-panel__header {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.insights-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 1rem;
+}
+
+.chart-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.chart-card,
+.summary-card {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(31, 26, 20, 0.1);
+  border-radius: 0.75rem;
+}
+
+.chart-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-card__controls {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.chart-card__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+.chart-card__field input {
+  min-width: 100px;
+}
+
+.chart-card__body {
+  height: 320px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background-color: rgba(31, 26, 20, 0.04);
+  border-radius: 0.75rem;
+}
+
+.summary-item__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+
+.summary-item__value {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+@media (max-width: 991px) {
+  .workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marking-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .canvas-actions-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .template-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .insights-panel__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-card__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-card__controls {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .chart-card__field {
+    width: 100%;
+  }
+
+  .chart-card__field input {
+    min-width: 0;
+  }
+
+  .canvas-panel__body {
+    height: clamp(420px, 58vh, 640px);
+    min-height: 420px;
+    max-height: 64vh;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marking-grid {
+    grid-template-columns: 1fr;
+  }
+}

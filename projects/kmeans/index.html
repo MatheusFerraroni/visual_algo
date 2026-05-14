@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>K-Means | Visual Algo</title>
+    <link rel="stylesheet" href="../../shared/libs/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <main class="template-page container-fluid py-3 py-lg-4">
+      <header class="template-header mb-3">
+        <h1 class="h3 mb-0">K-Means</h1>
+        <a class="btn btn-outline-dark btn-sm" href="../../index.html">
+          Voltar para a home
+        </a>
+      </header>
+
+      <section class="workspace-layout">
+        <aside class="control-panel">
+          <div class="control-panel__section">
+            <div class="d-flex justify-content-between align-items-center">
+              <h2 class="h6 mb-0">Configurações</h2>
+              <button id="reset-button" class="btn btn-outline-secondary btn-sm" type="button">
+                Reset
+              </button>
+            </div>
+
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0" for="k-value">Valor de K</label>
+                <span id="k-value-output" class="control-value">3</span>
+              </div>
+              <input id="k-value" class="form-range" type="range" min="1" max="30" step="1" value="3" />
+            </div>
+
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0" for="max-iterations">Limite de iterações</label>
+                <span id="max-iterations-output" class="control-value">100</span>
+              </div>
+              <input
+                id="max-iterations"
+                class="form-range"
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value="100"
+              />
+            </div>
+
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0" for="iteration-delay">
+                  Intervalo entre iterações (ms)
+                </label>
+                <span id="iteration-delay-output" class="control-value">1000</span>
+              </div>
+              <input
+                id="iteration-delay"
+                class="form-range"
+                type="range"
+                min="10"
+                max="1000"
+                step="10"
+                value="1000"
+              />
+            </div>
+
+            <div>
+              <label class="form-label mb-2" for="seed-input">Seed</label>
+              <input
+                id="seed-input"
+                class="form-control"
+                type="number"
+                min="0"
+                step="1"
+                value="42"
+              />
+            </div>
+
+            <div class="control-panel__group">
+              <button id="step-button" class="btn btn-outline-dark" type="button">
+                Fazer 1 iteração
+              </button>
+              <button id="run-button" class="btn btn-outline-dark" type="button">
+                Executar continuamente
+              </button>
+            </div>
+
+          </div>
+        </aside>
+
+        <div class="canvas-column">
+          <div class="canvas-panel">
+            <div id="canvas-root" class="canvas-panel__body"></div>
+          </div>
+
+          <div id="run-progress" class="run-progress mt-3 d-none" aria-hidden="true">
+            <div class="run-progress__header">
+              <span class="run-progress__label">Execução contínua</span>
+              <span id="run-progress-text" class="run-progress__value">0 / 100</span>
+            </div>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+              <div
+                id="run-progress-bar"
+                class="progress-bar"
+                style="width: 0%"
+                aria-valuenow="0"
+              ></div>
+            </div>
+          </div>
+
+          <section class="canvas-actions-panel mt-3">
+            <div class="canvas-actions-layout">
+              <section class="marking-panel">
+                <div class="marking-panel__header">
+                  <h2 class="h5 mb-0">Marcações</h2>
+                </div>
+                <div class="marking-grid">
+                  <button id="sample-mode-button" class="btn btn-outline-dark" type="button">
+                    Ativar modo de adição de amostras
+                  </button>
+                  <button id="centroid-mode-button" class="btn btn-outline-dark" type="button">
+                    Ativar modo de adição de centróide
+                  </button>
+                  <button id="batch-mode-button" class="btn btn-outline-dark" type="button">
+                    Ativar adição em lote
+                  </button>
+                  <button id="clear-samples-button" class="btn btn-outline-dark" type="button">
+                    Limpar amostras
+                  </button>
+                  <button id="clear-centroids-button" class="btn btn-outline-dark" type="button">
+                    Limpar centróides
+                  </button>
+                  <button id="randomize-centroids-button" class="btn btn-outline-dark" type="button">
+                    Aleatorizar centróides
+                  </button>
+                </div>
+              </section>
+
+              <section class="preset-panel">
+                <div class="preset-panel__header">
+                  <h2 class="h5 mb-0">Presets</h2>
+                </div>
+                <div class="preset-grid">
+                  <button id="preset-1-button" class="btn btn-outline-dark" type="button">
+                    Preset 1 - Clusters bem definidos
+                  </button>
+                  <button id="preset-2-button" class="btn btn-outline-dark" type="button">
+                    Preset 2 - Clusters próximos
+                  </button>
+                  <button id="preset-3-button" class="btn btn-outline-dark" type="button">
+                    Preset 3 - Sem clusters identificáveis
+                  </button>
+                  <button id="preset-4-button" class="btn btn-outline-dark" type="button">
+                    Preset 4 - Densidades desiguais
+                  </button>
+                  <button id="preset-5-button" class="btn btn-outline-dark" type="button">
+                    Preset 5 - Clusters com outliers
+                  </button>
+                  <button id="preset-6-button" class="btn btn-outline-dark" type="button">
+                    Preset 6 - Clusters alongados
+                  </button>
+                  <button id="preset-7-button" class="btn btn-outline-dark" type="button">
+                    Preset 7 - Círculos concêntricos
+                  </button>
+                  <button id="preset-8-button" class="btn btn-outline-dark" type="button">
+                    Preset 8 - Luas entrelaçadas
+                  </button>
+                  <button id="preset-9-button" class="btn btn-outline-dark" type="button">
+                    Preset 9 - Formas em U
+                  </button>
+                  <button id="preset-10-button" class="btn btn-outline-dark" type="button">
+                    Preset 10 - Tamanhos muito desiguais
+                  </button>
+                  <button id="preset-11-button" class="btn btn-outline-dark" type="button">
+                    Preset 11 - Alta sobreposição
+                  </button>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="insights-panel mt-3">
+        <div class="insights-panel__header">
+          <h2 class="h5 mb-0">Gráficos e informações gerais</h2>
+          <button id="y-scale-button" class="btn btn-outline-dark btn-sm" type="button">
+            Escala Y: Linear
+          </button>
+        </div>
+
+        <div class="insights-layout">
+          <div class="chart-stack">
+            <section class="chart-card">
+              <h3 class="h6 mb-3">Histórico da simulação</h3>
+              <div class="chart-card__body">
+                <canvas id="metrics-chart"></canvas>
+              </div>
+            </section>
+
+            <section class="chart-card">
+              <div class="chart-card__header">
+                <h3 class="h6 mb-0">Gráfico de cotovelo</h3>
+                <div class="chart-card__controls">
+                  <label class="chart-card__field" for="elbow-runs-input">
+                    <span>Execuções por K</span>
+                    <input
+                      id="elbow-runs-input"
+                      class="form-control form-control-sm"
+                      type="number"
+                      min="1"
+                      max="50"
+                      step="1"
+                      value="5"
+                    />
+                  </label>
+                  <button id="elbow-button" class="btn btn-outline-dark btn-sm" type="button">
+                    Gerar gráfico de cotovelo
+                  </button>
+                </div>
+              </div>
+              <div class="chart-card__body">
+                <canvas id="elbow-chart"></canvas>
+              </div>
+            </section>
+          </div>
+
+          <section class="summary-card">
+            <h3 class="h6 mb-3">Resumo atual</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="summary-item__label">Preset</span>
+                <span id="summary-preset" class="summary-item__value">Manual</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Modo</span>
+                <span id="summary-mode" class="summary-item__value">Amostras</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Estado</span>
+                <span id="summary-status" class="summary-item__value">Pausado</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Iteração</span>
+                <span id="summary-iteration" class="summary-item__value">0</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Amostras</span>
+                <span id="summary-samples" class="summary-item__value">0</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Centróides</span>
+                <span id="summary-centroids" class="summary-item__value">0</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Convergiu</span>
+                <span id="summary-converged" class="summary-item__value">Não</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-item__label">Dissimilaridade</span>
+                <span id="summary-dissimilarity" class="summary-item__value">0.00</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../shared/libs/chart.umd.min.js"></script>
+    <script src="../../shared/libs/p5.min.js"></script>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

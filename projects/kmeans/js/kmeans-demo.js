@@ -13,8 +13,10 @@ export class KMeansDemo {
   constructor(container) {
     this.container = container;
     this.p5Instance = null;
+    this.canvasElement = null;
     this.resizeObserver = null;
     this.pendingResizeFrame = null;
+    this.resizeTimeout = null;
     this.lastCanvasSize = null;
     this.sampleSprayTimer = null;
     this.iterationTimer = null;
@@ -38,6 +40,33 @@ export class KMeansDemo {
       width: Math.max(320, Math.floor(width)),
       height: Math.max(240, Math.floor(height)),
     };
+  }
+
+  queueInitialResize(instance = this.p5Instance) {
+    if (!instance) {
+      return;
+    }
+
+    instance.resizeToContainer?.(true);
+
+    requestAnimationFrame(() => {
+      instance.resizeToContainer?.(true);
+    });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        instance.resizeToContainer?.(true);
+      });
+    });
+
+    if (this.resizeTimeout !== null) {
+      clearTimeout(this.resizeTimeout);
+    }
+
+    this.resizeTimeout = setTimeout(() => {
+      this.resizeTimeout = null;
+      instance.resizeToContainer?.(true);
+    }, 80);
   }
 
   scheduleResize() {
@@ -329,16 +358,22 @@ export class KMeansDemo {
       p.setup = () => {
         p.pixelDensity(1);
         p.frameRate(60);
-        const canvas = p.createCanvas(10, 10);
+        const initialSize = this.getCanvasSize();
+        const canvas = p.createCanvas(initialSize.width, initialSize.height);
         canvas.parent(this.container);
+        this.canvasElement = canvas.elt ?? null;
         // Render only when state changes. This keeps the canvas responsive
         // without running a continuous draw loop before the algorithm exists.
         p.noLoop();
-        this.scheduleResize();
+        this.queueInitialResize(p);
       };
 
-      p.resizeToContainer = () => {
+      p.resizeToContainer = (force = false) => {
         const { width, height } = this.getCanvasSize();
+
+        if (!force && width < 2 && height < 2) {
+          return;
+        }
 
         if (
           this.lastCanvasSize &&
@@ -350,6 +385,14 @@ export class KMeansDemo {
 
         this.lastCanvasSize = { width, height };
         p.resizeCanvas(width, height);
+
+        if (this.canvasElement) {
+          this.canvasElement.width = width;
+          this.canvasElement.height = height;
+          this.canvasElement.style.width = `${width}px`;
+          this.canvasElement.style.height = `${height}px`;
+        }
+
         this.redraw();
       };
 
@@ -427,6 +470,11 @@ export class KMeansDemo {
     if (this.pendingResizeFrame !== null) {
       cancelAnimationFrame(this.pendingResizeFrame);
       this.pendingResizeFrame = null;
+    }
+
+    if (this.resizeTimeout !== null) {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = null;
     }
 
     if (this.p5Instance) {

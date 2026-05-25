@@ -2,9 +2,11 @@ export class TemplateDemo {
   constructor(container) {
     this.container = container;
     this.instance = null;
+    this.canvasElement = null;
     this.resizeObserver = null;
     this.lastSize = null;
     this.resizeFrame = null;
+    this.resizeTimeout = null;
   }
 
   getCanvasSize() {
@@ -31,6 +33,33 @@ export class TemplateDemo {
     });
   }
 
+  queueInitialResize(instance = this.instance) {
+    if (!instance) {
+      return;
+    }
+
+    instance.resizeToContainer?.(true);
+
+    requestAnimationFrame(() => {
+      instance.resizeToContainer?.(true);
+    });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        instance.resizeToContainer?.(true);
+      });
+    });
+
+    if (this.resizeTimeout !== null) {
+      clearTimeout(this.resizeTimeout);
+    }
+
+    this.resizeTimeout = setTimeout(() => {
+      this.resizeTimeout = null;
+      instance.resizeToContainer?.(true);
+    }, 80);
+  }
+
   mount() {
     if (!this.container) {
       return;
@@ -47,13 +76,19 @@ export class TemplateDemo {
       p.setup = () => {
         p.pixelDensity(1);
         p.frameRate(60);
-        const canvas = p.createCanvas(10, 10);
+        const initialSize = this.getCanvasSize();
+        const canvas = p.createCanvas(initialSize.width, initialSize.height);
         canvas.parent(this.container);
-        this.scheduleResize();
+        this.canvasElement = canvas.elt ?? null;
+        this.queueInitialResize(p);
       };
 
-      p.resizeToContainer = () => {
+      p.resizeToContainer = (force = false) => {
         const { width, height } = this.getCanvasSize();
+
+        if (!force && width < 2 && height < 2) {
+          return;
+        }
 
         if (
           this.lastSize &&
@@ -65,6 +100,13 @@ export class TemplateDemo {
 
         this.lastSize = { width, height };
         p.resizeCanvas(width, height);
+
+        if (this.canvasElement) {
+          this.canvasElement.width = width;
+          this.canvasElement.height = height;
+          this.canvasElement.style.width = `${width}px`;
+          this.canvasElement.style.height = `${height}px`;
+        }
 
         if (!isPositionInitialized) {
           x = p.width * 0.5;
@@ -136,6 +178,11 @@ export class TemplateDemo {
     if (this.resizeFrame !== null) {
       cancelAnimationFrame(this.resizeFrame);
       this.resizeFrame = null;
+    }
+
+    if (this.resizeTimeout !== null) {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = null;
     }
 
     if (this.instance) {

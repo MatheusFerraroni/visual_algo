@@ -1,0 +1,351 @@
+.template-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.template-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.workspace-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.control-panel {
+  padding: 1rem 1.25rem;
+  background-color: rgba(255, 253, 248, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.control-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.canvas-panel {
+  min-height: 0;
+  background:
+    radial-gradient(circle at top left, rgba(196, 99, 47, 0.11), transparent 26%),
+    linear-gradient(180deg, rgba(31, 26, 20, 0.04), rgba(31, 26, 20, 0.01));
+  border: 1px solid rgba(31, 26, 20, 0.12);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.canvas-panel__body {
+  width: 100%;
+  min-height: calc(100vh - 8.5rem);
+  padding: 1rem;
+}
+
+.perceptron-controls {
+  gap: 1rem;
+}
+
+.perceptron-controls__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.perceptron-vector-grid,
+.perceptron-range-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.perceptron-vector-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.perceptron-range-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.perceptron-number-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.perceptron-number-field__label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #51473b;
+}
+
+.perceptron-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.perceptron-stage__top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.perceptron-visual-card {
+  background-color: rgba(255, 253, 248, 0.95);
+  border: 1px solid rgba(31, 26, 20, 0.12);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.perceptron-visual-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(31, 26, 20, 0.08);
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #8e5a3b;
+}
+
+.perceptron-stage__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  min-height: 18rem;
+}
+
+.perceptron-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.perceptron-flow-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 0.8fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.perceptron-flow-operator {
+  font-weight: 800;
+  text-align: center;
+  color: #7f7668;
+}
+
+.perceptron-token {
+  padding: 0.85rem 1rem;
+  border-radius: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid rgba(31, 26, 20, 0.12);
+}
+
+.perceptron-token--input {
+  background-color: rgba(56, 132, 255, 0.09);
+}
+
+.perceptron-token--weight {
+  background-color: rgba(196, 99, 47, 0.12);
+}
+
+.perceptron-token--product {
+  background-color: rgba(55, 126, 76, 0.12);
+}
+
+.perceptron-sum-box {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background-color: #1f1a14;
+  color: #fffdf8;
+  border-radius: 1rem;
+}
+
+.perceptron-sum-box__line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.perceptron-sum-box__line--result {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 253, 248, 0.18);
+}
+
+.perceptron-activation-diagram {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 100%;
+}
+
+.perceptron-activation-arrow {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #8d8378;
+  text-align: center;
+}
+
+.perceptron-node {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 12rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(31, 26, 20, 0.12);
+}
+
+.perceptron-node__label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6c6459;
+}
+
+.perceptron-node--sum {
+  background-color: rgba(196, 99, 47, 0.1);
+}
+
+.perceptron-node--activation {
+  background-color: rgba(56, 132, 255, 0.09);
+}
+
+.perceptron-node--output {
+  background-color: rgba(55, 126, 76, 0.12);
+}
+
+.perceptron-summary-card,
+.perceptron-p5-card,
+.perceptron-chart-card {
+  padding-bottom: 1rem;
+}
+
+.perceptron-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding: 0 1.25rem;
+}
+
+.perceptron-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  background-color: rgba(31, 26, 20, 0.04);
+  border-radius: 0.875rem;
+}
+
+.perceptron-summary-item__label {
+  font-size: 0.8rem;
+  color: #6b6257;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.perceptron-chart-card__body {
+  height: 24rem;
+  padding: 0 1rem;
+}
+
+.perceptron-p5-card__body {
+  padding: 0 1rem;
+}
+
+.perceptron-p5-root {
+  height: 24rem;
+  border: 1px solid rgba(31, 26, 20, 0.1);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(56, 132, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(246, 240, 231, 0.95));
+}
+
+.perceptron-p5-root canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 1199px) {
+  .perceptron-stage__top,
+  .perceptron-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .perceptron-activation-diagram {
+    grid-template-columns: 1fr;
+  }
+
+  .perceptron-activation-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 991px) {
+  .workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-panel__body {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .perceptron-flow-row,
+  .perceptron-range-grid,
+  .perceptron-vector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .perceptron-flow-operator {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .template-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .canvas-panel__body {
+    padding: 0.75rem;
+  }
+
+  .perceptron-stage__content,
+  .perceptron-visual-card__header,
+  .perceptron-summary-grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

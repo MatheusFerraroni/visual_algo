@@ -14,7 +14,8 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
 │   ├── libs/
 │   │   ├── bootstrap.min.css
 │   │   ├── chart.umd.min.js
-│   │   └── p5.min.js
+│   │   ├── p5.min.js
+│   │   └── tf.min.js
 │   ├── math/
 │   ├── ui/
 │   └── utils/
@@ -28,7 +29,7 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
     │   └── js/
     │       ├── main.js
     │       └── template-demo.js
-    └── kmeans/
+    ├── kmeans/
         ├── index.html
         ├── README.md
         ├── assets/
@@ -50,6 +51,25 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
             ├── render.js
             ├── state.js
             └── summary-controller.js
+    ├── perceptron/
+    │   ├── index.html
+    │   ├── README.md
+    │   ├── assets/
+    │   ├── css/
+    │   │   └── style.css
+    │   └── js/
+    │       ├── activation-functions.js
+    │       ├── chart-controller.js
+    │       ├── main.js
+    │       ├── p5-perceptron-view.js
+    │       ├── perceptron-demo.js
+    │       └── state.js
+    └── codex-car/
+        ├── index.html
+        ├── README.md
+        └── src/
+            ├── styles.css
+            └── js/
 ```
 
 ## Organização
@@ -60,11 +80,15 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
 - `shared/ui`, `shared/utils` e `shared/math`: espaço para código reutilizável entre demonstrações.
 - [projects/template](/Users/matheus/Projects/visual_algo/projects/template): modelo base para criar novas demos.
 - [projects/kmeans](/Users/matheus/Projects/visual_algo/projects/kmeans): demonstração interativa do algoritmo K-Means.
+- [projects/perceptron](/Users/matheus/Projects/visual_algo/projects/perceptron): configurador e visualizador de um único perceptron.
+- [projects/codex-car](/Users/matheus/Projects/visual_algo/projects/codex-car): simulação de veículos neurais evoluídos por algoritmo genético.
 
 ## Projetos atuais
 
 - [Template](/Users/matheus/Projects/visual_algo/projects/template/index.html): base mínima para novas demonstrações com `p5.js`, `Bootstrap` local e JavaScript modular.
 - [K-Means](/Users/matheus/Projects/visual_algo/projects/kmeans/index.html): demonstração interativa com adição manual de pontos e centróides, presets, execução passo a passo, execução contínua, métricas e gráfico de cotovelo.
+- [Perceptron](/Users/matheus/Projects/visual_algo/projects/perceptron/index.html): configurador de entradas, pesos, bias e função de ativação com visualização do fluxo do perceptron.
+- [Veículos Neurais](/Users/matheus/Projects/visual_algo/projects/codex-car/index.html): simulação de veículos 2D com editor de pista, rede neural, algoritmo genético e histórico de fitness.
 
 ## Como abrir localmente
 
@@ -81,6 +105,8 @@ Depois acesse:
 - `http://localhost:8000/`
 - `http://localhost:8000/projects/template/`
 - `http://localhost:8000/projects/kmeans/`
+- `http://localhost:8000/projects/perceptron/`
+- `http://localhost:8000/projects/codex-car/`
 
 ## Como criar uma nova demonstração
 

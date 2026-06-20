@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veículos Neurais | Visual Algo</title>
+  <link rel="stylesheet" href="../../shared/libs/bootstrap.min.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <main class="template-page container-fluid py-3 py-lg-4 app-shell">
+    <header class="template-header mb-3">
+      <h1 class="h3 mb-0">Veículos Neurais</h1>
+      <a class="btn btn-outline-dark btn-sm" href="../../index.html">
+        Voltar para a home
+      </a>
+    </header>
+
+    <div class="row g-3 flex-xl-nowrap">
+      <aside class="col-12 col-xl-4 col-xxl-3">
+        <div class="sidebar-column">
+          <div class="card glass-card sidebar-surface mb-3">
+            <div class="card-body">
+              <h2 class="section-title">Controles</h2>
+              <div class="row g-2 mb-2">
+                <div class="col-6 d-grid">
+                  <button id="startBtn" class="btn btn-primary">Iniciar</button>
+                </div>
+                <div class="col-6 d-grid">
+                  <button id="pauseBtn" class="btn btn-soft">Pausar / Retomar</button>
+                </div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-6 d-grid">
+                  <button id="resetBtn" class="btn btn-warning">Reiniciar Evolução</button>
+                </div>
+                <div class="col-6 d-grid">
+                  <button id="nextGenBtn" class="btn btn-soft">Avançar Geração</button>
+                </div>
+              </div>
+              <div class="alert status-box" id="statusBox" role="status">
+                Abrindo bibliotecas e preparando a pista padrão...
+              </div>
+              <div class="form-check form-switch mt-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="renderToggle" checked />
+                <label class="form-check-label" for="renderToggle">
+                  Renderização ativa
+                </label>
+                <div class="hint mt-1">
+                  Ligada: `tempo real` com canvas. Desligada: `simulador de eventos` para priorizar desempenho.
+                </div>
+              </div>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="followLeaderToggle" />
+                <label class="form-check-label" for="followLeaderToggle">
+                  Seguir veículo líder
+                </label>
+                <div class="hint mt-1">
+                  Mantém a câmera centralizada no carro em primeiro. Com esse modo ativo, só o zoom muda manualmente.
+                </div>
+              </div>
+              <div class="row g-2 mt-2">
+                <div class="col-sm-6 d-grid">
+                  <button id="resetViewBtn" class="btn btn-soft btn-sm">Resetar Zoom</button>
+                </div>
+                <div class="col-sm-6">
+                  <div class="hint mb-0">
+                    Scroll ou pinch para zoom. Pan com botão do meio ou `espaço + arrastar`.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass-card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <h2 class="section-title mb-0">Feedback Sem Render</h2>
+                <span id="batchPreviewModeBadge" class="badge rounded-pill text-bg-secondary">Tempo real</span>
+              </div>
+              <div id="batchPreviewEmpty" class="history-empty">
+                Quando uma geração terminar, este painel mostra onde a população parou e quais foram os resultados finais. Ele é especialmente útil com a renderização desabilitada.
+              </div>
+              <div id="batchPreviewPanel" class="d-none">
+                <div id="batchPreviewMeta" class="batch-preview-meta mb-2"></div>
+                <div class="batch-preview-svg-wrap mb-2">
+                  <svg id="batchPreviewSvg" class="batch-preview-svg" viewBox="0 0 320 220" preserveAspectRatio="xMidYMid meet" aria-label="Resumo visual da última geração"></svg>
+                </div>
+                <div id="batchPreviewList" class="batch-preview-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass-card mb-3">
+            <div class="card-body">
+              <h2 class="section-title">Editor de Pista</h2>
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="mapEditorToggle" checked />
+                <label class="form-check-label" for="mapEditorToggle">
+                  Editor de mapa ativo
+                </label>
+                <div class="hint mt-1">
+                  Ative para editar a pista. Desative para inspecionar veículos com hover e clique.
+                </div>
+              </div>
+              <div id="trackEditorControls">
+                <div class="row g-3 mb-2">
+                  <div class="col-sm-6">
+                    <label class="form-label" for="editorMode">Modo de edição</label>
+                    <select id="editorMode" class="form-select form-select-sm">
+                      <option value="outer">Parede externa</option>
+                      <option value="inner">Parede interna</option>
+                      <option value="start">Largada e direção</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="showCheckpoints">Checkpoints visíveis</label>
+                    <select id="showCheckpoints" class="form-select form-select-sm">
+                      <option value="true">Mostrar</option>
+                      <option value="false">Ocultar</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row g-3 mb-2">
+                  <div class="col-sm-7">
+                    <label class="form-label" for="defaultTrackSelect">Pista padrão</label>
+                    <select id="defaultTrackSelect" class="form-select form-select-sm"></select>
+                  </div>
+                  <div class="col-sm-5 d-grid align-self-end">
+                    <button id="defaultTrackBtn" class="btn btn-primary">Carregar pista padrão</button>
+                  </div>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-6 d-grid">
+                    <button id="clearTrackBtn" class="btn btn-danger">Limpar Pista</button>
+                  </div>
+                  <div class="col-6 d-grid">
+                    <button id="saveTrackBtn" class="btn btn-soft">Exportar Pista JSON</button>
+                  </div>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-6 d-grid">
+                    <button id="loadTrackBtn" class="btn btn-soft">Importar Pista JSON</button>
+                  </div>
+                  <div class="col-6 d-grid">
+                    <button id="saveTrackLocalBtn" class="btn btn-soft">Salvar Pista no Navegador</button>
+                  </div>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-12 d-grid">
+                    <button id="loadTrackLocalBtn" class="btn btn-soft">Carregar Pista Salva</button>
+                  </div>
+                </div>
+                <label class="form-label" for="trackJson">JSON da pista</label>
+                <textarea id="trackJson" class="form-control"></textarea>
+                <div class="hint">
+                  No canvas: clique numa aresta para inserir ponto, arraste um ponto para mover, clique com o botão direito perto de um ponto para remover. No modo de largada, clique e arraste para definir posição e direção inicial.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass-card mb-3">
+            <div class="card-body">
+              <h2 class="section-title">Rede Neural</h2>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="hiddenLayers">Camadas ocultas</label>
+                  <input id="hiddenLayers" class="form-control form-control-sm" type="number" min="1" max="6" step="1" value="2" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="neuronsPerLayer">Neurônios por camada</label>
+                  <input id="neuronsPerLayer" class="form-control form-control-sm" type="number" min="2" max="64" step="1" value="12" />
+                </div>
+              </div>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="activation">Ativação oculta</label>
+                  <select id="activation" class="form-select form-select-sm">
+                    <option value="tanh">tanh</option>
+                    <option value="relu">relu</option>
+                    <option value="elu">elu</option>
+                    <option value="sigmoid">sigmoid</option>
+                  </select>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="sensorCount">Número de sensores</label>
+                  <input id="sensorCount" class="form-control form-control-sm" type="number" min="3" max="21" step="1" value="7" />
+                </div>
+              </div>
+              <div class="mb-2">
+                <label class="form-label" for="sensorAngles">Ângulos dos sensores (graus)</label>
+                <input id="sensorAngles" class="form-control form-control-sm" type="text" value="-90,-45,-20,0,20,45,90" />
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-6 d-grid">
+                  <button id="spreadSensorsBtn" class="btn btn-soft">Distribuir Ângulos Automaticamente</button>
+                </div>
+                <div class="col-6 d-grid">
+                  <button id="saveBestBtn" class="btn btn-soft">Salvar Melhor Rede</button>
+                </div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-6 d-grid">
+                  <button id="loadBestBtn" class="btn btn-soft">Carregar Rede Salva</button>
+                </div>
+                <div class="col-6 d-grid">
+                  <button id="saveBestLocalBtn" class="btn btn-soft">Salvar Rede no Navegador</button>
+                </div>
+              </div>
+              <div class="d-grid mb-2">
+                <button id="loadBestLocalBtn" class="btn btn-soft">Carregar Rede do Navegador</button>
+              </div>
+              <label class="form-label" for="bestBrainJson">JSON da melhor rede</label>
+              <textarea id="bestBrainJson" class="form-control"></textarea>
+              <div class="hint">
+                As entradas da rede são: velocidade, aceleração, distâncias dos sensores e curvatura estimada da pista à frente. As saídas são aceleração e direção desejada.
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass-card mb-3">
+            <div class="card-body">
+              <h2 class="section-title">Algoritmo Genético</h2>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="populationSize">População</label>
+                  <input id="populationSize" class="form-control form-control-sm" type="number" min="4" max="300" step="1" value="40" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="maxGenerationTime">Duração da geração (s)</label>
+                  <input id="maxGenerationTime" class="form-control form-control-sm" type="number" min="3" max="120" step="1" value="20" />
+                </div>
+              </div>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="mutationRate">Taxa de mutação</label>
+                  <input id="mutationRate" class="form-control form-control-sm" type="number" min="0" max="1" step="0.01" value="0.12" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="mutationStrength">Intensidade da mutação</label>
+                  <input id="mutationStrength" class="form-control form-control-sm" type="number" min="0" max="2" step="0.01" value="0.18" />
+                </div>
+              </div>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="elitism">Elitismo</label>
+                  <input id="elitism" class="form-control form-control-sm" type="number" min="0" max="0.5" step="0.01" value="0.12" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="crossoverRate">Taxa de crossover</label>
+                  <input id="crossoverRate" class="form-control form-control-sm" type="number" min="0" max="1" step="0.01" value="0.65" />
+                </div>
+              </div>
+              <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label" for="collisionPenalty">Penalidade por colisão</label>
+                  <input id="collisionPenalty" class="form-control form-control-sm" type="number" min="0" max="500" step="1" value="30" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="progressBonus">Bônus por progresso</label>
+                  <input id="progressBonus" class="form-control form-control-sm" type="number" min="0" max="10" step="0.1" value="1.6" />
+                </div>
+              </div>
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="form-label" for="speedBonus">Bônus por velocidade média</label>
+                  <input id="speedBonus" class="form-control form-control-sm" type="number" min="0" max="10" step="0.1" value="0.8" />
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="showSensorsFor">Sensores desenhados</label>
+                  <select id="showSensorsFor" class="form-select form-select-sm">
+                    <option value="best">Melhor veículo</option>
+                    <option value="none">Ocultar</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass-card card-muted mb-3">
+            <div class="card-body">
+              <h2 class="section-title">Instruções</h2>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge rounded-pill instruction-pill">1. Edite outer/inner</span>
+                <span class="badge rounded-pill instruction-pill">2. Ajuste largada</span>
+                <span class="badge rounded-pill instruction-pill">3. Inicie a evolução</span>
+                <span class="badge rounded-pill instruction-pill">4. Observe sensores e fitness</span>
+              </div>
+              <ul class="mb-0">
+                <li>A pista precisa ser fechada: a parede externa delimita o fora da pista e a interna forma o miolo do circuito.</li>
+                <li>Os checkpoints são gerados automaticamente pelo centro da pista e ajudam a medir o progresso ao longo do traçado.</li>
+                <li>Linhas ciano saindo do melhor carro são os sensores. Quanto maior a distância até a parede, maior a entrada correspondente na rede.</li>
+                <li>A estatística de fitness combina avanço na pista, velocidade média e uma penalidade se o carro colidir.</li>
+                <li>Se você mudar arquitetura da rede ou número de sensores, reinicie a evolução para aplicar a nova estrutura sem misturar pesos incompatíveis.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="footer-note mb-0">
+            Tudo nesta demo roda no navegador usando <code>p5.js</code> para desenho/simulação,
+            <code>TensorFlow.js</code> para a rede neural e <code>Bootstrap</code> local para a maior parte da UI.
+          </p>
+        </div>
+      </aside>
+
+      <section class="col-12 col-xl-8 col-xxl-9 d-flex flex-column">
+        <div class="card glass-card hero-card mb-3">
+          <div class="card-body">
+            <h1 class="h4 mb-2">Evolução genética de veículos neurais em pista 2D</h1>
+            <p class="mb-0 text-secondary">
+              A pista padrão já aparece ao abrir a página. Edite o traçado, ajuste a rede e observe a população evoluir geração após geração.
+            </p>
+          </div>
+        </div>
+
+        <div class="canvas-stage flex-grow-1">
+          <div id="canvas-holder"></div>
+          <div class="card glass-card floating-stats">
+            <div class="card-body">
+              <h2 class="section-title mb-3">Geração</h2>
+              <div class="stats-grid">
+                <div class="stat-item"><span>Atual</span><strong id="statGeneration">0</strong></div>
+                <div class="stat-item"><span>Vivos</span><strong id="statAlive">0</strong></div>
+                <div class="stat-item"><span>Melhor fitness</span><strong id="statBestFitness">0</strong></div>
+                <div class="stat-item"><span>Fitness médio</span><strong id="statAvgFitness">0</strong></div>
+                <div class="stat-item"><span>Melhor progresso</span><strong id="statBestProgress">0%</strong></div>
+                <div class="stat-item"><span>Tempo</span><strong id="statTime">0.0s</strong></div>
+                <div class="stat-item"><span>Steps/s</span><strong id="statStepMs">0.0 steps/s</strong></div>
+                <div class="stat-item"><span>Combustível</span><strong id="statFuel">0%</strong></div>
+                <div class="stat-item"><span>Consumo inst.</span><strong id="statFuelRate">0/s</strong></div>
+              </div>
+            </div>
+          </div>
+          <div id="vehicleHoverBox" class="card glass-card vehicle-hover-box d-none">
+            <div class="card-body" id="vehicleHoverContent"></div>
+          </div>
+        </div>
+
+        <div class="card glass-card mt-3">
+          <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div>
+                <h2 class="section-title mb-1">Evolução do GA</h2>
+                <p class="text-secondary mb-0">
+                  Cada ponto registra a geração, o fitness médio e o fitness do melhor indivíduo daquela geração.
+                </p>
+              </div>
+            </div>
+            <div id="historyEmpty" class="history-empty">
+              O gráfico aparece assim que a primeira geração for concluída.
+            </div>
+            <div id="historyPanel" class="d-none">
+              <div class="history-legend mb-3">
+                <span class="legend-item"><span class="legend-swatch legend-swatch-best"></span> Melhor fitness</span>
+                <span class="legend-item"><span class="legend-swatch legend-swatch-avg"></span> Fitness médio</span>
+              </div>
+              <div class="history-chart-wrap mb-3">
+                <svg id="historyChart" class="history-chart" viewBox="0 0 860 280" preserveAspectRatio="none" aria-label="Gráfico de evolução do algoritmo genético"></svg>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle history-table mb-0">
+                  <thead>
+                    <tr>
+                      <th>Geração</th>
+                      <th>Fitness médio</th>
+                      <th>Melhor fitness</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="../../shared/libs/p5.min.js"></script>
+  <script src="../../shared/libs/tf.min.js"></script>
+  <script src="src/js/core/base.js"></script>
+  <script src="src/js/core/profiler.js"></script>
+  <script src="src/js/track/geometry.js"></script>
+  <script src="src/js/core/runtime.js"></script>
+  <script src="src/js/neural/brain.js"></script>
+  <script src="src/js/sim/inference.js"></script>
+  <script src="src/js/ui/history.js"></script>
+  <script src="src/js/sim/evolution.js"></script>
+  <script src="src/js/ui/inspection.js"></script>
+  <script src="src/js/track/editor.js"></script>
+  <script src="src/js/render/canvas.js"></script>
+  <script src="src/js/ui/controls.js"></script>
+  <script src="src/js/main.js"></script>
+</body>
+</html>

@@ -64,12 +64,19 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
     │       ├── p5-perceptron-view.js
     │       ├── perceptron-demo.js
     │       └── state.js
-    └── codex-car/
+    ├── codex-car/
+    │   ├── index.html
+    │   ├── README.md
+    │   └── src/
+    │       ├── styles.css
+    │       └── js/
+    └── evo/
         ├── index.html
         ├── README.md
-        └── src/
-            ├── styles.css
-            └── js/
+        ├── docs/
+        ├── src/
+        ├── test/
+        └── vendor/
 ```
 
 ## Organização
@@ -82,6 +89,7 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
 - [projects/kmeans](/Users/matheus/Projects/visual_algo/projects/kmeans): demonstração interativa do algoritmo K-Means.
 - [projects/perceptron](/Users/matheus/Projects/visual_algo/projects/perceptron): configurador e visualizador de um único perceptron.
 - [projects/codex-car](/Users/matheus/Projects/visual_algo/projects/codex-car): simulação de veículos neurais evoluídos por algoritmo genético.
+- [projects/evo](/Users/matheus/Projects/visual_algo/projects/evo): simulação evolutiva determinística de seres neurais em um arquipélago procedural.
 
 ## Projetos atuais
 
@@ -89,6 +97,7 @@ Repositório para hospedar demonstrações visuais de algoritmos com HTML, CSS e
 - [K-Means](/Users/matheus/Projects/visual_algo/projects/kmeans/index.html): demonstração interativa com adição manual de pontos e centróides, presets, execução passo a passo, execução contínua, métricas e gráfico de cotovelo.
 - [Perceptron](/Users/matheus/Projects/visual_algo/projects/perceptron/index.html): configurador de entradas, pesos, bias e função de ativação com visualização do fluxo do perceptron.
 - [Veículos Neurais](/Users/matheus/Projects/visual_algo/projects/codex-car/index.html): simulação de veículos 2D com editor de pista, rede neural, algoritmo genético e histórico de fitness.
+- [Simulação Evolutiva](/Users/matheus/Projects/visual_algo/projects/evo/index.html): seres com visão, energia e cérebro neural evoluem continuamente para localizar e consumir comida.
 
 ## Como abrir localmente
 
@@ -107,6 +116,7 @@ Depois acesse:
 - `http://localhost:8000/projects/kmeans/`
 - `http://localhost:8000/projects/perceptron/`
 - `http://localhost:8000/projects/codex-car/`
+- `http://localhost:8000/projects/evo/`
 
 ## Como criar uma nova demonstração
 

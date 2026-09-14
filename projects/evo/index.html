@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'sha256-PmUnfxNLN1UfoJC2U19QX897emzGgojOx/9QxMkPonw='; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'"
+    >
+    <meta name="description" content="Simulação evolutiva determinística com mapa procedural, comida e seres em p5.js.">
+    <title>Evo — simulação evolutiva</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Simulação evolutiva</p>
+          <h1>Evo</h1>
+        </div>
+        <p class="hero__description">
+          Arquipélago, comida e seres reproduzíveis, relógio fixo e sementes independentes para mundo e simulação.
+        </p>
+      </header>
+
+      <section class="execution-toolbar" aria-label="Controles persistentes da simulação">
+        <div class="execution-toolbar__speed">
+          <label class="execution-toolbar__label" for="speed-select">Velocidade</label>
+          <select id="speed-select" name="speed">
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
+            <option value="max">Máximo</option>
+          </select>
+          <span class="config-help execution-toolbar__help">
+            <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a velocidade da simulação" aria-describedby="help-speed">?</button>
+            <span class="config-tooltip" id="help-speed" role="tooltip">Controla quantos ticks fixos são processados por tempo real. Não altera o resultado determinístico.</span>
+          </span>
+        </div>
+        <div class="execution-toolbar__actions" aria-label="Ações frequentes da simulação">
+          <button class="button button--primary" id="primary-action" type="button">Iniciar</button>
+          <button class="button" id="pause-action" type="button" disabled>Pausar</button>
+        </div>
+      </section>
+
+      <section class="control-panel" aria-labelledby="controls-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-heading__kicker">Execução</p>
+            <h2 id="controls-title">Controles</h2>
+          </div>
+          <div class="status-pill" id="status-pill" data-state="idle">
+            <span class="status-pill__dot" aria-hidden="true"></span>
+            <span id="status-label">Pronto</span>
+          </div>
+        </div>
+
+        <details class="neural-controls control-group" id="population-controls">
+          <summary>
+            <span>População e geração</span>
+            <span class="neural-controls__summary" id="population-summary">40 seres · 120 s</span>
+          </summary>
+          <div class="controls-grid control-group__grid">
+          <div class="field field--half">
+            <div class="field__heading">
+              <label class="field__label" for="population-input">Seres</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a quantidade de seres" aria-describedby="help-population">?</button>
+                <span class="config-tooltip" id="help-population" role="tooltip">Define a população da próxima geração. Na prévia ou ao reiniciar, vale desde a geração 1.</span>
+              </span>
+            </div>
+            <input id="population-input" name="population" type="number" value="40" min="1" step="1" inputmode="numeric">
+            <small class="field__hint" id="population-application-hint">Atual: 40</small>
+          </div>
+
+          <div class="field field--half">
+            <div class="field__heading">
+              <label class="field__label" for="generation-duration-input">Tempo máximo da geração (s)</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre o tempo máximo da geração" aria-describedby="help-generation-duration">?</button>
+                <span class="config-tooltip" id="help-generation-duration" role="tooltip">Encerra a geração após este tempo simulado. Durante a execução, vale para a próxima geração.</span>
+              </span>
+            </div>
+            <input id="generation-duration-input" name="generation-duration" type="number" value="120" min="0.03333333333333333" step="any" inputmode="decimal">
+            <small class="field__hint" id="generation-duration-hint">Atual: 120 s</small>
+          </div>
+          </div>
+        </details>
+
+        <details class="neural-controls control-group" id="food-controls">
+          <summary>
+            <span>Comida</span>
+            <span class="neural-controls__summary" id="food-summary">20 iniciais · 3 a cada 3 s · máximo 300</span>
+          </summary>
+          <div class="controls-grid control-group__grid">
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="initial-food-input">Comidas iniciais</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre as comidas iniciais" aria-describedby="help-initial-food">?</button>
+                <span class="config-tooltip" id="help-initial-food" role="tooltip">Quantidade criada no tick zero. Durante a execução, a alteração vale somente na próxima geração e não muda as comidas atuais.</span>
+              </span>
+            </div>
+            <input id="initial-food-input" name="initial-food" type="number" value="20" min="1" max="300" step="1" inputmode="numeric">
+            <small class="field__hint" id="initial-food-application-hint">Atual: 20</small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="spawn-food-input">Por spawn</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a quantidade por spawn" aria-describedby="help-spawn-food">?</button>
+                <span class="config-tooltip" id="help-spawn-food" role="tooltip">Quantidade solicitada em cada evento. Aplica imediatamente; capacidade e tiles livres podem reduzir o lote real.</span>
+              </span>
+            </div>
+            <input id="spawn-food-input" name="spawn-food" type="number" value="3" min="1" step="1" inputmode="numeric">
+            <small class="field__hint" aria-hidden="true"></small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="max-food-input">Máximo no mapa</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre o máximo de comidas" aria-describedby="help-max-food">?</button>
+                <span class="config-tooltip" id="help-max-food" role="tooltip">Limite simultâneo de comidas. Durante a execução, a alteração vale somente na próxima geração e não remove comidas atuais.</span>
+              </span>
+            </div>
+            <input id="max-food-input" name="max-food" type="number" value="300" min="1" step="1" inputmode="numeric">
+            <small class="field__hint" id="max-food-application-hint">Atual: 300</small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="food-min-energy-input">Energia mínima</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a energia mínima da comida" aria-describedby="help-food-min-energy">?</button>
+                <span class="config-tooltip" id="help-food-min-energy" role="tooltip">Energia de uma comida em produtividade zero. Durante a execução, a alteração vale somente na próxima geração.</span>
+              </span>
+            </div>
+            <input id="food-min-energy-input" name="food-min-energy" type="number" value="10" min="0.000001" step="0.1" inputmode="decimal">
+            <small class="field__hint" id="food-energy-application-hint">Atual: 10–50</small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="food-max-energy-input">Energia máxima</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a energia máxima da comida" aria-describedby="help-food-max-energy">?</button>
+                <span class="config-tooltip" id="help-food-max-energy" role="tooltip">Energia de uma comida em produtividade um; deve ser igual ou maior que a mínima. Durante a execução, vale na próxima geração.</span>
+              </span>
+            </div>
+            <input id="food-max-energy-input" name="food-max-energy" type="number" value="50" min="0.000001" step="0.1" inputmode="decimal">
+            <small class="field__hint" aria-hidden="true"></small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="food-inactivity-input">Inatividade mínima (s)</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a inatividade da comida" aria-describedby="help-food-inactivity">?</button>
+                <span class="config-tooltip" id="help-food-inactivity" role="tooltip">Prazo mínimo sem consumo antes da realocação. Cada comida soma um acréscimo seedado entre zero e esse mesmo valor, evitando expirações sincronizadas. Zero desativa; durante a execução, vale na próxima geração.</span>
+              </span>
+            </div>
+            <input id="food-inactivity-input" name="food-inactivity" type="number" value="30" min="0" step="0.1" inputmode="decimal">
+            <small class="field__hint" id="food-inactivity-application-hint">Atual: 30 s</small>
+          </div>
+
+          <div class="field">
+            <div class="field__heading">
+              <label class="field__label" for="spawn-interval-input">Intervalo (s)</label>
+              <span class="config-help">
+                <button class="config-help__trigger" type="button" aria-label="Ajuda sobre o intervalo de spawn" aria-describedby="help-spawn-interval">?</button>
+                <span class="config-tooltip" id="help-spawn-interval" role="tooltip">Segundos simulados entre eventos. Ao mudar, o próximo spawn é reagendado a partir do tick atual.</span>
+              </span>
+            </div>
+            <input id="spawn-interval-input" name="spawn-interval" type="number" value="3" min="0.1" step="0.1" inputmode="decimal">
+            <small class="field__hint" aria-hidden="true"></small>
+          </div>
+          </div>
+        </details>
+
+        <details class="neural-controls" id="balance-controls">
+          <summary>
+            <span>Custos e sobrevivência</span>
+            <span class="neural-controls__summary" id="balance-summary">movimento 4 × |v|² · metabolismo 0,75/s · água 3×</span>
+          </summary>
+          <div class="neural-controls__grid">
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="movement-cost-coefficient-input">Coeficiente de movimento</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o coeficiente de movimento" aria-describedby="help-movement-cost-coefficient">?</button><span class="config-tooltip" id="help-movement-cost-coefficient" role="tooltip">Multiplica o custo de deslocamento por segundo. Zero torna o deslocamento gratuito; durante a execução, vale na próxima geração.</span></span>
+              </div>
+              <input id="movement-cost-coefficient-input" name="movement-cost-coefficient" type="number" value="4" min="0" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="movement-cost-coefficient-hint">Atual: 4</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="movement-cost-exponent-input">Expoente do custo</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o expoente do custo" aria-describedby="help-movement-cost-exponent">?</button><span class="config-tooltip" id="help-movement-cost-exponent" role="tooltip">Define quanto velocidades altas encarecem o movimento em |velocidade| elevado a este expoente. Deve ser positivo e vale na próxima geração.</span></span>
+              </div>
+              <input id="movement-cost-exponent-input" name="movement-cost-exponent" type="number" value="2" min="0.000001" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="movement-cost-exponent-hint">Atual: 2</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="turn-cost-input">Custo máximo de giro (/s)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o custo de giro" aria-describedby="help-turn-cost">?</button><span class="config-tooltip" id="help-turn-cost" role="tooltip">Energia consumida por segundo ao girar com intensidade máxima. Zero torna o giro gratuito; vale na próxima geração.</span></span>
+              </div>
+              <input id="turn-cost-input" name="turn-cost" type="number" value="1" min="0" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="turn-cost-hint">Atual: 1/s</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="basal-metabolism-input">Metabolismo basal (/s)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o metabolismo basal" aria-describedby="help-basal-metabolism">?</button><span class="config-tooltip" id="help-basal-metabolism" role="tooltip">Energia consumida por segundo mesmo com o ser parado. Zero desativa esse custo; vale na próxima geração.</span></span>
+              </div>
+              <input id="basal-metabolism-input" name="basal-metabolism" type="number" value="0.75" min="0" step="0.05" inputmode="decimal">
+              <small class="field__hint" id="basal-metabolism-hint">Atual: 0,75/s</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="water-movement-cost-input">Multiplicador na água</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o custo de movimento na água" aria-describedby="help-water-movement-cost">?</button><span class="config-tooltip" id="help-water-movement-cost" role="tooltip">Multiplica somente o custo de deslocamento quando o ser termina o tick sobre água. Deve ser positivo e vale na próxima geração.</span></span>
+              </div>
+              <input id="water-movement-cost-input" name="water-movement-cost" type="number" value="3" min="0.000001" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="water-movement-cost-hint">Atual: 3×</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="zero-energy-damage-input">Dano sem energia (/s)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o dano sem energia" aria-describedby="help-zero-energy-damage">?</button><span class="config-tooltip" id="help-zero-energy-damage" role="tooltip">Vida perdida por segundo enquanto a energia está em zero. Zero desativa o dano de fome; vale na próxima geração.</span></span>
+              </div>
+              <input id="zero-energy-damage-input" name="zero-energy-damage" type="number" value="20" min="0" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="zero-energy-damage-hint">Atual: 20/s</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="healing-energy-threshold-input">Limiar de cura</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o limiar de cura" aria-describedby="help-healing-energy-threshold">?</button><span class="config-tooltip" id="help-healing-energy-threshold" role="tooltip">A cura ocorre somente acima desta energia e nunca reduz a energia abaixo dela. Deve caber na energia máxima; vale na próxima geração.</span></span>
+              </div>
+              <input id="healing-energy-threshold-input" name="healing-energy-threshold" type="number" value="80" min="0" max="100" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="healing-energy-threshold-hint">Atual: 80</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="healing-energy-per-life-input">Energia por vida</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre a energia por vida recuperada" aria-describedby="help-healing-energy-per-life">?</button><span class="config-tooltip" id="help-healing-energy-per-life" role="tooltip">Energia gasta para recuperar uma unidade de vida. Deve ser positiva e vale na próxima geração.</span></span>
+              </div>
+              <input id="healing-energy-per-life-input" name="healing-energy-per-life" type="number" value="2" min="0.000001" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="healing-energy-per-life-hint">Atual: 2</small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="healing-max-life-input">Cura máxima (/s)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre a cura máxima" aria-describedby="help-healing-max-life">?</button><span class="config-tooltip" id="help-healing-max-life" role="tooltip">Limita a quantidade de vida recuperada por segundo. Zero desativa a cura e vale na próxima geração.</span></span>
+              </div>
+              <input id="healing-max-life-input" name="healing-max-life" type="number" value="1" min="0" step="0.1" inputmode="decimal">
+              <small class="field__hint" id="healing-max-life-hint">Atual: 1/s</small>
+            </div>
+          </div>
+        </details>
+
+        <details class="neural-controls" id="neural-controls">
+          <summary>
+            <span>Cérebro neural</span>
+            <span class="neural-controls__summary" id="network-summary">16 → 12 → 2 · tanh · 10 Hz</span>
+          </summary>
+          <div class="neural-controls__grid">
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="eye-count-input">Olhos frontais</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre os olhos frontais" aria-describedby="help-eye-count">?</button><span class="config-tooltip" id="help-eye-count" role="tooltip">Quantidade de setores frontais. Cada olho adiciona entradas de comida e água; fica bloqueada após iniciar.</span></span>
+              </div>
+              <input id="eye-count-input" name="eye-count" type="number" value="5" min="1" max="15" step="1" inputmode="numeric">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="eye-fov-input">Campo de visão (°)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o campo de visão" aria-describedby="help-eye-fov">?</button><span class="config-tooltip" id="help-eye-fov" role="tooltip">Ângulo frontal total dividido igualmente entre os olhos. Fica bloqueado após iniciar.</span></span>
+              </div>
+              <input id="eye-fov-input" name="eye-fov" type="number" value="120" min="0.1" max="360" step="1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="eye-range-input">Alcance (tiles)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o alcance dos olhos" aria-describedby="help-eye-range">?</button><span class="config-tooltip" id="help-eye-range" role="tooltip">Distância máxima, em tiles, para perceber comida, água ou borda. Fica bloqueada após iniciar.</span></span>
+              </div>
+              <input id="eye-range-input" name="eye-range" type="number" value="6" min="0.1" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="brain-frequency-select">Decisões/s</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre as decisões por segundo" aria-describedby="help-brain-frequency">?</button><span class="config-tooltip" id="help-brain-frequency" role="tooltip">Frequência de leitura dos sensores e inferência neural. A ação é mantida entre decisões.</span></span>
+              </div>
+              <select id="brain-frequency-select" name="brain-frequency">
+                <option value="1">1 Hz</option>
+                <option value="2">2 Hz</option>
+                <option value="3">3 Hz</option>
+                <option value="5">5 Hz</option>
+                <option value="6">6 Hz</option>
+                <option value="10" selected>10 Hz</option>
+                <option value="15">15 Hz</option>
+                <option value="30">30 Hz</option>
+              </select>
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field neural-controls__layers">
+              <div class="field__heading">
+                <label class="field__label" for="hidden-layers-input">Camadas ocultas</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre as camadas ocultas" aria-describedby="help-hidden-layers">?</button><span class="config-tooltip" id="help-hidden-layers" role="tooltip">Lista de neurônios por camada, separada por vírgulas; vazia cria uma rede sem camada oculta.</span></span>
+              </div>
+              <input id="hidden-layers-input" name="hidden-layers" type="text" value="12" placeholder="Ex.: 16, 8" autocomplete="off" spellcheck="false">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="activation-select">Ativação interna</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre a ativação interna" aria-describedby="help-activation">?</button><span class="config-tooltip" id="help-activation" role="tooltip">Função aplicada nas camadas ocultas. As duas saídas permanecem tanh entre −1 e 1.</span></span>
+              </div>
+              <select id="activation-select" name="activation">
+                <option value="tanh">tanh</option>
+                <option value="relu">ReLU</option>
+                <option value="sigmoid">Sigmoide</option>
+              </select>
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="initial-gene-min-input">Gene inicial mín.</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o gene inicial mínimo" aria-describedby="help-initial-gene-min">?</button><span class="config-tooltip" id="help-initial-gene-min" role="tooltip">Menor valor usado ao sortear os genomas da geração 1; deve respeitar o limite absoluto.</span></span>
+              </div>
+              <input id="initial-gene-min-input" name="initial-gene-min" type="number" value="-1" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="initial-gene-max-input">Gene inicial máx.</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o gene inicial máximo" aria-describedby="help-initial-gene-max">?</button><span class="config-tooltip" id="help-initial-gene-max" role="tooltip">Maior valor usado ao sortear os genomas da geração 1; deve respeitar o limite absoluto.</span></span>
+              </div>
+              <input id="initial-gene-max-input" name="initial-gene-max" type="number" value="1" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="gene-min-input">Limite absoluto mín.</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o limite absoluto mínimo" aria-describedby="help-gene-min">?</button><span class="config-tooltip" id="help-gene-min" role="tooltip">Menor valor permitido após crossover e mutação. Genomas evoluídos são limitados a este intervalo.</span></span>
+              </div>
+              <input id="gene-min-input" name="gene-min" type="number" value="-5" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="gene-max-input">Limite absoluto máx.</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o limite absoluto máximo" aria-describedby="help-gene-max">?</button><span class="config-tooltip" id="help-gene-max" role="tooltip">Maior valor permitido após crossover e mutação. Genomas evoluídos são limitados a este intervalo.</span></span>
+              </div>
+              <input id="gene-max-input" name="gene-max" type="number" value="5" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+          </div>
+        </details>
+
+        <details class="neural-controls" id="evolution-controls">
+          <summary>
+            <span>Evolução</span>
+            <span class="neural-controls__summary" id="genetics-summary">4 elites globais · torneio 3 · mutação 5%</span>
+          </summary>
+          <div class="neural-controls__grid">
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="elite-count-input">Top K globais</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o Top K global" aria-describedby="help-elite-count">?</button><span class="config-tooltip" id="help-elite-count" role="tooltip">Quantidade dos melhores genomas globais copiados exatamente para a próxima geração, sem mutação.</span></span>
+              </div>
+              <input id="elite-count-input" name="elite-count" type="number" value="4" min="1" step="1" inputmode="numeric">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="tournament-size-input">Tamanho do torneio</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o tamanho do torneio" aria-describedby="help-tournament-size">?</button><span class="config-tooltip" id="help-tournament-size" role="tooltip">Quantidade de candidatos distintos comparados em cada seleção de pai. Vale na próxima reprodução.</span></span>
+              </div>
+              <input id="tournament-size-input" name="tournament-size" type="number" value="3" min="1" step="1" inputmode="numeric">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="crossover-parent-a-input">Gene do pai A (%)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre a chance do gene vir do pai A" aria-describedby="help-crossover-parent-a">?</button><span class="config-tooltip" id="help-crossover-parent-a" role="tooltip">Probabilidade de cada gene do descendente vir do pai A durante o crossover uniforme.</span></span>
+              </div>
+              <input id="crossover-parent-a-input" name="crossover-parent-a" type="number" value="50" min="0" max="100" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="mutation-chance-input">Mutação por gene (%)</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre a mutação por gene" aria-describedby="help-mutation-chance">?</button><span class="config-tooltip" id="help-mutation-chance" role="tooltip">Probabilidade independente de aplicar ruído gaussiano a cada gene não elitista.</span></span>
+              </div>
+              <input id="mutation-chance-input" name="mutation-chance" type="number" value="5" min="0" max="100" step="0.1" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+            <div class="field">
+              <div class="field__heading">
+                <label class="field__label" for="mutation-stddev-input">Desvio da mutação</label>
+                <span class="config-help"><button class="config-help__trigger" type="button" aria-label="Ajuda sobre o desvio da mutação" aria-describedby="help-mutation-stddev">?</button><span class="config-tooltip" id="help-mutation-stddev" role="tooltip">Desvio-padrão do ruído gaussiano aplicado aos genes escolhidos para mutação.</span></span>
+              </div>
+              <input id="mutation-stddev-input" name="mutation-stddev" type="number" value="0.15" min="0" step="0.01" inputmode="decimal">
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+          </div>
+        </details>
+
+        <details class="neural-controls control-group" id="seed-controls">
+          <summary>
+            <span>Seeds</span>
+            <span class="neural-controls__summary" id="seed-summary">simulação e mapa independentes</span>
+          </summary>
+          <div class="controls-grid control-group__grid">
+            <div class="field field--seed">
+              <div class="field__heading">
+                <label class="field__label" for="simulation-seed-input">Seed da simulação</label>
+                <span class="config-help">
+                  <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a seed da simulação" aria-describedby="help-simulation-seed">?</button>
+                  <span class="config-tooltip" id="help-simulation-seed" role="tooltip">Controla spawns posteriores, direções, decisões e genética. Fica bloqueada após iniciar.</span>
+                </span>
+              </div>
+              <div class="seed-control">
+                <input id="simulation-seed-input" name="simulation-seed" type="text" value="evo-1" autocomplete="off" spellcheck="false">
+                <button class="seed-control__random" id="random-simulation-seed" type="button" aria-label="Sugerir seed aleatória para a simulação">Aleatório</button>
+              </div>
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+
+            <div class="field field--seed">
+              <div class="field__heading">
+                <label class="field__label" for="map-seed-input">Seed do mapa</label>
+                <span class="config-help">
+                  <button class="config-help__trigger" type="button" aria-label="Ajuda sobre a seed do mapa" aria-describedby="help-map-seed">?</button>
+                  <span class="config-tooltip" id="help-map-seed" role="tooltip">Controla terreno, produtividade, comida inicial e posições iniciais. Fica bloqueada após iniciar.</span>
+                </span>
+              </div>
+              <div class="seed-control">
+                <input id="map-seed-input" name="map-seed" type="text" value="evo-1" autocomplete="off" spellcheck="false">
+                <button class="seed-control__random" id="random-map-seed" type="button" aria-label="Sugerir seed aleatória para o mapa">Aleatório</button>
+              </div>
+              <small class="field__hint" aria-hidden="true"></small>
+            </div>
+          </div>
+        </details>
+
+        <div class="actions actions--secondary" aria-label="Ações secundárias da simulação">
+          <button class="button button--quiet" id="new-action" type="button" disabled>Nova execução</button>
+          <button class="button button--danger" id="reset-settings-action" type="button">Restaurar padrões</button>
+        </div>
+
+        <p class="status-message" id="status-message" role="status" aria-live="polite">
+          A prévia acompanha mapa, comida, seres, cérebro e evolução. Inicie quando estiver satisfeito.
+        </p>
+      </section>
+
+      <section class="world-panel" aria-labelledby="world-title">
+        <div class="section-heading section-heading--world">
+          <div>
+            <p class="section-heading__kicker">128 × 128 tiles</p>
+            <h2 id="world-title">Mundo lógico</h2>
+          </div>
+          <div class="world-summary" aria-label="Resumo do mapa">
+            <span id="land-stat">—</span>
+            <span id="productivity-stat">—</span>
+          </div>
+        </div>
+        <div class="camera-toolbar" aria-label="Controles da câmera">
+          <button class="camera-toolbar__button" id="camera-zoom-out" type="button" aria-label="Afastar câmera">−</button>
+          <output class="camera-toolbar__value" id="camera-zoom-value" aria-live="polite">100%</output>
+          <button class="camera-toolbar__button" id="camera-zoom-in" type="button" aria-label="Aproximar câmera">+</button>
+          <button class="camera-toolbar__button camera-toolbar__button--reset" id="camera-reset" type="button">Centralizar</button>
+          <button class="camera-toolbar__button camera-toolbar__button--follow" id="follow-best-action" type="button" aria-pressed="false">Seguir melhor</button>
+        </div>
+        <div id="canvas-container" class="canvas-container"></div>
+        <div class="map-legend" aria-label="Legenda do mapa">
+          <span><i class="map-legend__swatch map-legend__swatch--water" aria-hidden="true"></i>Água</span>
+          <span><i class="map-legend__swatch map-legend__swatch--low" aria-hidden="true"></i>Terra menos produtiva</span>
+          <span><i class="map-legend__swatch map-legend__swatch--high" aria-hidden="true"></i>Terra mais produtiva</span>
+          <span><i class="map-legend__swatch map-legend__swatch--food" aria-hidden="true"></i>Comida — tamanho representa energia</span>
+          <span><i class="map-legend__swatch map-legend__swatch--being" aria-hidden="true"></i>Ser — cor representa vida</span>
+          <span><i class="map-legend__status-bars" aria-hidden="true"><b></b><b></b></i>Barras do ser — vida e energia</span>
+        </div>
+        <aside class="being-inspector" aria-live="polite" aria-labelledby="being-inspector-title">
+          <div>
+            <p class="section-heading__kicker">Inspeção</p>
+            <h2 id="being-inspector-title">Entidade selecionada</h2>
+          </div>
+          <p class="being-inspector__empty" id="being-inspector-empty">Clique em um ser vivo ou em uma comida para inspecionar seus dados.</p>
+          <div class="being-inspector__details" id="being-inspector-details" hidden>
+            <div class="entity-inspector__title-row">
+              <strong id="selected-being-title">Ser #—</strong>
+              <button class="button entity-inspector__follow" id="follow-being-action" type="button">Seguir ser</button>
+            </div>
+            <dl>
+              <div><dt>Vida</dt><dd id="selected-being-life">—</dd></div>
+              <div><dt>Energia</dt><dd id="selected-being-energy">—</dd></div>
+              <div><dt>Alimentando</dt><dd id="selected-being-feeding">—</dd></div>
+              <div><dt>Comida alvo</dt><dd id="selected-being-feeding-food">—</dd></div>
+              <div><dt>Velocidade</dt><dd id="selected-being-speed">—</dd></div>
+              <div><dt>Idade</dt><dd id="selected-being-age">—</dd></div>
+              <div><dt>Fitness</dt><dd id="selected-being-fitness">—</dd></div>
+              <div><dt>Energia absorvida</dt><dd id="selected-being-absorbed">—</dd></div>
+            </dl>
+            <div class="brain-inspector">
+              <section>
+                <h3>Entradas do cérebro</h3>
+                <div class="neural-table-wrap">
+                  <table class="neural-table">
+                    <caption class="sr-only">Entradas atuais da rede neural do ser selecionado</caption>
+                    <thead><tr><th scope="col">Entrada</th><th scope="col">O que representa</th><th scope="col">Valor</th></tr></thead>
+                    <tbody id="selected-being-brain-inputs"></tbody>
+                  </table>
+                </div>
+              </section>
+              <section>
+                <h3>Saídas do cérebro</h3>
+                <div class="neural-table-wrap">
+                  <table class="neural-table">
+                    <caption class="sr-only">Saídas atuais da rede neural do ser selecionado</caption>
+                    <thead><tr><th scope="col">Saída</th><th scope="col">Efeito</th><th scope="col">Valor</th></tr></thead>
+                    <tbody id="selected-being-brain-outputs"></tbody>
+                  </table>
+                </div>
+                <p class="brain-inspector__genes">Genes <strong id="selected-being-gene-count">—</strong></p>
+              </section>
+            </div>
+          </div>
+          <div class="being-inspector__details" id="food-inspector-details" hidden>
+            <strong id="selected-food-title">Comida #—</strong>
+            <dl>
+              <div><dt>Coluna</dt><dd id="selected-food-column">—</dd></div>
+              <div><dt>Linha</dt><dd id="selected-food-row">—</dd></div>
+              <div><dt>Produtividade</dt><dd id="selected-food-productivity">—</dd></div>
+              <div><dt>Energia inicial</dt><dd id="selected-food-initial-energy">—</dd></div>
+              <div><dt>Energia restante</dt><dd id="selected-food-remaining-energy">—</dd></div>
+              <div><dt>Restante</dt><dd id="selected-food-ratio">—</dd></div>
+              <div><dt>Realocação</dt><dd id="selected-food-inactivity">—</dd></div>
+            </dl>
+          </div>
+        </aside>
+      </section>
+
+      <section class="metrics" aria-label="Métricas da simulação">
+        <article class="metric-card">
+          <span class="metric-card__label">Geração</span>
+          <strong class="metric-card__value" id="generation-metric">1</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Tempo da geração</span>
+          <strong class="metric-card__value" id="time-metric">00:00.0</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Tempo total</span>
+          <strong class="metric-card__value" id="total-time-metric">00:00.0</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Tick</span>
+          <strong class="metric-card__value" id="tick-metric">0</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Gerações concluídas</span>
+          <strong class="metric-card__value" id="completed-generations-metric">0</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Seres vivos</span>
+          <strong class="metric-card__value" id="alive-being-metric">40/40</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Comidas</span>
+          <strong class="metric-card__value" id="food-metric">20</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Melhor fitness</span>
+          <strong class="metric-card__value" id="best-fitness-metric">0,00</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Fitness média</span>
+          <strong class="metric-card__value" id="mean-fitness-metric">0,00</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-card__label">Melhor histórico</span>
+          <strong class="metric-card__value" id="best-ever-metric">—</strong>
+        </article>
+        <article class="metric-card metric-card--seeds">
+          <span class="metric-card__label">Seeds ativas</span>
+          <span class="seed-values">
+            <strong class="metric-card__value" id="simulation-seed-metric">Simulação: evo-1</strong>
+            <strong class="metric-card__value" id="map-seed-metric">Mapa: evo-1</strong>
+          </span>
+        </article>
+      </section>
+
+      <section class="history-panel" aria-labelledby="history-title">
+        <div class="section-heading section-heading--history">
+          <div>
+            <p class="section-heading__kicker">Histórico da execução</p>
+            <h2 id="history-title">Histórico evolutivo</h2>
+          </div>
+          <div class="history-tools">
+            <div class="history-range" role="group" aria-label="Intervalo visível do histórico">
+              <button type="button" id="history-last50" aria-pressed="true">Últimas 50</button>
+              <button type="button" id="history-all" aria-pressed="false">Todas</button>
+            </div>
+            <div class="history-legend" aria-label="Legenda do gráfico">
+              <span><i class="history-legend__line history-legend__line--best" aria-hidden="true"></i>Melhor fitness</span>
+              <span><i class="history-legend__line history-legend__line--mean" aria-hidden="true"></i>Fitness média</span>
+              <span><i class="history-legend__line history-legend__line--top-k" aria-hidden="true"></i>Média Top K global</span>
+              <span><i class="history-legend__line history-legend__line--top-ten" aria-hidden="true"></i>Média Top 10%</span>
+              <span><i class="history-legend__line history-legend__line--best history-legend__line--moving" aria-hidden="true"></i>Melhor · MM10</span>
+              <span><i class="history-legend__line history-legend__line--mean history-legend__line--moving" aria-hidden="true"></i>Média · MM10</span>
+              <span><i class="history-legend__line history-legend__line--top-k history-legend__line--moving" aria-hidden="true"></i>Top K · MM10</span>
+              <span><i class="history-legend__line history-legend__line--top-ten history-legend__line--moving" aria-hidden="true"></i>Top 10% · MM10</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-frame chart-frame--history">
+          <canvas
+            class="generation-chart"
+            id="generation-history-chart"
+            role="img"
+            aria-label="Histórico evolutivo vazio; nenhuma geração foi concluída."
+          ></canvas>
+        </div>
+        <p class="generation-chart__summary" id="generation-history-summary">
+          O histórico aparecerá após o encerramento da primeira geração.
+        </p>
+      </section>
+
+      <section class="timeline-panel" aria-labelledby="timeline-title">
+        <div class="section-heading section-heading--timeline">
+          <div>
+            <p class="section-heading__kicker">Métricas temporais</p>
+            <h2 id="timeline-title">Dinâmica da geração</h2>
+          </div>
+          <div class="timeline-selector">
+            <span>Geração exibida</span>
+            <div class="timeline-selector__controls">
+              <button class="timeline-selector__step" id="generation-timeline-previous" type="button" aria-label="Exibir geração anterior" disabled>‹</button>
+              <label class="sr-only" for="generation-timeline-select">Geração exibida</label>
+              <select id="generation-timeline-select">
+                <option value="current">Atual — G1</option>
+              </select>
+              <button class="timeline-selector__step" id="generation-timeline-next" type="button" aria-label="Exibir próxima geração" disabled>›</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-grid">
+          <article class="timeline-card">
+            <h3>Seres e comidas</h3>
+            <div class="timeline-legend"><span class="legend--green">Seres vivos</span><span class="legend--yellow">Comidas</span></div>
+            <div class="chart-frame"><canvas id="timeline-population-chart" role="img" aria-label="Seres e comidas: sem amostras."></canvas></div>
+            <p id="timeline-population-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card">
+            <h3>Energia disponível em comida</h3>
+            <div class="timeline-legend"><span class="legend--yellow">Energia total</span></div>
+            <div class="chart-frame"><canvas id="timeline-food-energy-chart" role="img" aria-label="Energia disponível em comida: sem amostras."></canvas></div>
+            <p id="timeline-food-energy-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card">
+            <h3>Condição dos seres vivos</h3>
+            <div class="timeline-legend"><span class="legend--cyan">Energia média</span><span class="legend--red">Vida média</span></div>
+            <div class="chart-frame"><canvas id="timeline-being-condition-chart" role="img" aria-label="Condição dos seres vivos: sem amostras."></canvas></div>
+            <p id="timeline-being-condition-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card">
+            <h3>Fitness</h3>
+            <div class="timeline-legend"><span class="legend--green">Melhor</span><span class="legend--yellow">Média</span><span class="legend--green legend--moving">Melhor · MM5 s</span><span class="legend--yellow legend--moving">Média · MM5 s</span></div>
+            <div class="chart-frame"><canvas id="timeline-fitness-chart" role="img" aria-label="Fitness: sem amostras."></canvas></div>
+            <p id="timeline-fitness-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card">
+            <h3>Movimento e água</h3>
+            <div class="timeline-legend"><span class="legend--cyan">Velocidade média</span><span class="legend--blue">Seres na água</span></div>
+            <div class="chart-frame"><canvas id="timeline-movement-chart" role="img" aria-label="Movimento e água: sem amostras."></canvas></div>
+            <p id="timeline-movement-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card">
+            <h3>Mortes</h3>
+            <div class="timeline-legend"><span class="legend--red legend--bar">No intervalo</span><span class="legend--yellow">Acumuladas</span></div>
+            <div class="chart-frame"><canvas id="timeline-deaths-chart" role="img" aria-label="Mortes: sem amostras."></canvas></div>
+            <p id="timeline-deaths-summary">Nenhuma amostra disponível.</p>
+          </article>
+          <article class="timeline-card timeline-card--wide">
+            <h3>Fluxo de comidas</h3>
+            <div class="timeline-legend"><span class="legend--green legend--bar">Criadas</span><span class="legend--red legend--bar">Esgotadas</span></div>
+            <div class="chart-frame"><canvas id="timeline-food-flow-chart" role="img" aria-label="Fluxo de comidas: sem amostras."></canvas></div>
+            <p id="timeline-food-flow-summary">Nenhuma amostra disponível.</p>
+            <p class="timeline-card__note">Janelas de 5 s. “Criadas” inclui spawns e realocações; “Esgotadas” conta somente comidas removidas ao chegar a zero por consumo. Consumo parcial aparece na energia disponível.</p>
+          </article>
+        </div>
+      </section>
+
+      <details class="performance-debug" id="performance-debug-panel">
+        <summary>
+          <span>
+            <small>Instrumentação local</small>
+            Diagnóstico de desempenho
+          </span>
+          <span class="performance-debug__summary-hint">tempos em ms</span>
+        </summary>
+        <div class="performance-debug__content">
+          <div class="performance-debug__heading">
+            <div>
+              <p class="section-heading__kicker">Thread principal do navegador</p>
+              <h2>Custos da execução</h2>
+              <p id="performance-debug-status">A coleta começará ao iniciar a simulação.</p>
+            </div>
+            <button type="button" id="performance-debug-reset">Zerar medições</button>
+          </div>
+          <p class="performance-debug__note">
+            Último, média, P95 e máximo usam até as 300 chamadas mais recentes de cada etapa.
+            Chamadas e total abrangem a sessão atual. Os tempos são decorridos na thread principal,
+            não CPU exclusiva, e incluem o custo da própria instrumentação.
+          </p>
+          <dl class="performance-debug__context" id="performance-debug-context"></dl>
+          <div class="performance-debug__tables" id="performance-debug-tables"></div>
+        </div>
+      </details>
+
+    </main>
+
+    <noscript>Esta aplicação precisa de JavaScript habilitado.</noscript>
+    <script src="./vendor/p5.min.js"></script>
+    <script src="./vendor/chart.umd.min.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

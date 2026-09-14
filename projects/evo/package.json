@@ -1,0 +1,15 @@
+{
+  "name": "evo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Base determinística de uma simulação evolutiva em p5.js.",
+  "scripts": {
+    "start": "node ./scripts/serve.mjs",
+    "test": "node --test",
+    "test:watch": "node --test --watch"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
